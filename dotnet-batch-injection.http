@@ -1,0 +1,6 @@
+@DotnetBatchInjection_HostAddress = http://localhost:5135
+
+GET {{DotnetBatchInjection_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
