@@ -6,6 +6,8 @@ public static class ApplicationServiceExtensions
     {
         builder.Services.RegisterServices();
 
+        builder.Services.RegisterConfigs(builder.Configuration);
+
         builder.Services.AddOpenApi();
 
         builder.Services.AddDbContext<AtsDbContext>(options =>
