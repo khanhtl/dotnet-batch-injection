@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DotnetBatchInjection.Generator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b13bd91d8d34722ddd30fd4a6677200a62ef271")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+758fee01c541f0493f7655de303632d0b744a009")]
 [assembly: System.Reflection.AssemblyProductAttribute("DotnetBatchInjection.Generator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DotnetBatchInjection.Generator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

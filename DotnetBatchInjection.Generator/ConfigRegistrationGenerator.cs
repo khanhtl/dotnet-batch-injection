@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace DotnetBatchInjection.SourceGenerator
 {
@@ -13,49 +12,37 @@ namespace DotnetBatchInjection.SourceGenerator
         public void Execute(GeneratorExecutionContext context)
         {
             var configs = FindConfigRegistrations(context);
-            if (configs.Count > 0)
-            {
-                var source = GenerateConfigRegistrationSource(configs);
-                context.AddSource("ConfigRegistrationExtensions.g.cs", source);
-            }
+            if (configs.Count == 0) return;
+
+            var source = GenerateConfigRegistrationSource(configs);
+            context.AddSource(Constants.ConfigRegistrationFileName, source);
         }
 
-        private List<ConfigRegistrationInfo> FindConfigRegistrations(GeneratorExecutionContext context)
-        {
-            var configs = new List<ConfigRegistrationInfo>();
-
-            foreach (var classSymbol in GeneratorHelpers.GetAllClasses(context))
-            {
-                var attribute = classSymbol.GetAttributes()
-                    .FirstOrDefault(ad => ad.AttributeClass?.Name == "AutoBindAttribute");
-
-                if (attribute == null) continue;
-
-                configs.Add(new ConfigRegistrationInfo
+        private static List<ConfigRegistrationInfo> FindConfigRegistrations(GeneratorExecutionContext context) =>
+            GeneratorHelpers.GetAllClasses(context)
+                .Select(classSymbol => (ClassSymbol: classSymbol, Attribute: classSymbol.GetAttributes()
+                    .FirstOrDefault(attr => attr.AttributeClass?.Name == nameof(AutoBindAttribute))))
+                .Where(tuple => tuple.Attribute != null)
+                .Select(tuple => new ConfigRegistrationInfo
                 {
-                    ClassName = classSymbol.ToDisplayString(),
-                    SectionKey = attribute.ConstructorArguments.FirstOrDefault().Value?.ToString() ?? classSymbol.Name
-                });
-            }
+                    ClassName = tuple.ClassSymbol.ToDisplayString(),
+                    SectionKey = tuple.Attribute.ConstructorArguments.FirstOrDefault().Value?.ToString() ?? tuple.ClassSymbol.Name
+                })
+                .ToList();
 
-            return configs;
-        }
-
-        private string GenerateConfigRegistrationSource(List<ConfigRegistrationInfo> configs)
+        private static string GenerateConfigRegistrationSource(List<ConfigRegistrationInfo> configs)
         {
-            var methodBody = new StringBuilder();
-            methodBody.AppendLine("            if (configuration == null) return services;");
+            var methodBodyLines = new List<string> { Constants.ConfigNullCheck };
+            methodBodyLines.AddRange(configs.Select(config =>
+                $"            services.Configure<{config.ClassName}>(configuration.GetSection(\"{config.SectionKey}\"));"));
 
-            foreach (var config in configs)
-            {
-                methodBody.AppendLine($"            services.Configure<{config.ClassName}>(configuration.GetSection(\"{config.SectionKey}\"));");
-            }
+            var methodBody = string.Join("\n", methodBodyLines);
 
             return GeneratorHelpers.GenerateExtensionClass(
-                className: "DependencyInjectionExtensions",
-                methodName: "RegisterConfigs",
+                className: Constants.ConfigExtensionClassName,
+                methodName: Constants.ConfigExtensionMethodName,
                 methodParameters: ", IConfiguration configuration",
-                methodBody: methodBody.ToString());
+                methodBody: methodBody);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace DotnetBatchInjection.SourceGenerator
 {
@@ -13,14 +12,13 @@ namespace DotnetBatchInjection.SourceGenerator
         public void Execute(GeneratorExecutionContext context)
         {
             var services = FindServiceRegistrations(context);
-            if (services.Count > 0)
-            {
-                var source = GenerateServiceRegistrationSource(services);
-                context.AddSource("ServiceRegistrationExtensions.g.cs", source);
-            }
+            if (services.Count == 0) return;
+
+            var source = GenerateServiceRegistrationSource(services);
+            context.AddSource(Constants.ServiceRegistrationFileName, source);
         }
 
-        private List<ServiceRegistrationInfo> FindServiceRegistrations(GeneratorExecutionContext context)
+        private static List<ServiceRegistrationInfo> FindServiceRegistrations(GeneratorExecutionContext context)
         {
             var services = new List<ServiceRegistrationInfo>();
 
@@ -28,10 +26,13 @@ namespace DotnetBatchInjection.SourceGenerator
             {
                 if (!IsServiceClass(classSymbol)) continue;
 
+                var interfaceSymbol = FindMatchingInterface(classSymbol);
+                if (interfaceSymbol == null) continue;
+
                 services.Add(new ServiceRegistrationInfo
                 {
                     ClassName = classSymbol.ToDisplayString(),
-                    InterfaceName = FindMatchingInterface(classSymbol)?.ToDisplayString(),
+                    InterfaceName = interfaceSymbol.ToDisplayString(),
                     Lifetime = GetServiceLifetime(classSymbol)
                 });
             }
@@ -39,46 +40,36 @@ namespace DotnetBatchInjection.SourceGenerator
             return services;
         }
 
-        private bool IsServiceClass(INamedTypeSymbol classSymbol)
-        {
-            return classSymbol.Name.EndsWith("Service") &&
-                   classSymbol.GetAttributes()
-                       .Any(ad => ad.AttributeClass?.BaseType?.Name == "ServiceTypeAttribute");
-        }
+        private static bool IsServiceClass(INamedTypeSymbol classSymbol) =>
+            classSymbol.Name.EndsWith("Service") &&
+            classSymbol.GetAttributes().Any(attr =>
+                attr.AttributeClass?.BaseType?.Name == nameof(ServiceTypeAttribute));
 
-        private INamedTypeSymbol FindMatchingInterface(INamedTypeSymbol classSymbol)
-        {
-            var interfaceName = $"I{classSymbol.Name}";
-            return classSymbol.Interfaces.FirstOrDefault(i => i.Name == interfaceName);
-        }
+        private static INamedTypeSymbol? FindMatchingInterface(INamedTypeSymbol classSymbol) =>
+            classSymbol.Interfaces.FirstOrDefault(i => i.Name == $"I{classSymbol.Name}");
 
-        private string GetServiceLifetime(INamedTypeSymbol classSymbol)
+        private static string GetServiceLifetime(INamedTypeSymbol classSymbol)
         {
             var attribute = classSymbol.GetAttributes()
-                .FirstOrDefault(ad => ad.AttributeClass?.BaseType?.Name == "ServiceTypeAttribute");
+                .FirstOrDefault(attr => attr.AttributeClass?.BaseType?.Name == nameof(ServiceTypeAttribute));
 
-            if (attribute?.AttributeClass?.Name == "SingletonServiceAttribute")
-                return ServiceLifetimeNames.Singleton;
-            if (attribute?.AttributeClass?.Name == "TransientServiceAttribute")
-                return ServiceLifetimeNames.Transient;
-
-            return ServiceLifetimeNames.Scoped;
+            return attribute?.ConstructorArguments.FirstOrDefault().Value switch
+            {
+                ServiceLifetime lifetime => ServiceLifetimeNames.GetName(lifetime),
+                _ => ServiceLifetimeNames.GetName(ServiceLifetime.Scoped) // Default to Scoped
+            };
         }
 
-        private string GenerateServiceRegistrationSource(List<ServiceRegistrationInfo> services)
+        private static string GenerateServiceRegistrationSource(List<ServiceRegistrationInfo> services)
         {
-            var methodBody = new StringBuilder();
-
-            foreach (var service in services.Where(s => !string.IsNullOrEmpty(s.InterfaceName)))
-            {
-                methodBody.AppendLine($"            services.Add{service.Lifetime}<{service.InterfaceName}, {service.ClassName}>();");
-            }
+            var methodBody = string.Join("\n", services
+                .Select(s => $"            services.Add{s.Lifetime}<{s.InterfaceName}, {s.ClassName}>();"));
 
             return GeneratorHelpers.GenerateExtensionClass(
-                className: "DependencyInjectionExtensions",
-                methodName: "RegisterServices",
+                className: Constants.ServiceExtensionClassName,
+                methodName: Constants.ServiceExtensionMethodName,
                 methodParameters: "",
-                methodBody: methodBody.ToString());
+                methodBody: methodBody);
         }
     }
 }
