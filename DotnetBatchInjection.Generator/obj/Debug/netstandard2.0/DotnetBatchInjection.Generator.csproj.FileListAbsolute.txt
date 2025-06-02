@@ -1,0 +1,11 @@
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\bin\Debug\netstandard2.0\DotnetBatchInjection.Generator.deps.json
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\bin\Debug\netstandard2.0\DotnetBatchInjection.Generator.dll
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\bin\Debug\netstandard2.0\DotnetBatchInjection.Generator.pdb
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.csproj.AssemblyReference.cache
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.AssemblyInfoInputs.cache
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.AssemblyInfo.cs
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.csproj.CoreCompileInputs.cache
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.sourcelink.json
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.dll
+C:\Data\Learning\Net\dotnet-batch-injection\DotnetBatchInjection.Generator\obj\Debug\netstandard2.0\DotnetBatchInjection.Generator.pdb
